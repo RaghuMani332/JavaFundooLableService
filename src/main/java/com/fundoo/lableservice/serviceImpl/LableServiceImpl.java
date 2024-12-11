@@ -13,8 +13,8 @@ import com.fundoo.lableservice.dao.LableDao;
 import com.fundoo.lableservice.entity.LableEntity;
 import com.fundoo.lableservice.exception.LableNotFoundException;
 import com.fundoo.lableservice.exception.UserMissmatchException;
-import com.fundoo.lableservice.feing.FeingClientNotes;
-import com.fundoo.lableservice.feing.FeingClientUser;
+//import com.fundoo.lableservice.feing.FeingClientNotes;
+import com.fundoo.lableservice.feing.FeingClient;
 import com.fundoo.lableservice.requestdto.LableRequest;
 import com.fundoo.lableservice.responsedto.LableResponse;
 import com.fundoo.lableservice.responsedto.NotesResponse;
@@ -30,11 +30,11 @@ public class LableServiceImpl implements LableService {
 	@Autowired
 	private LableDao dao;
 	
-	@Autowired
-	private FeingClientNotes notesFeign;
+//	@Autowired
+//	private FeingClientNotes notesFeign;
 	
 	@Autowired
-	private FeingClientUser userFeign;
+	private FeingClient userFeign;
 	
 	
 	@Override
@@ -55,7 +55,7 @@ public class LableServiceImpl implements LableService {
 	public ResponseEntity<ResponceStructure<LableResponse>> addNotes(UUID lableId, UUID noteId) {
 		LableEntity lable = dao.findById(lableId).orElseThrow(() -> new LableNotFoundException("please create a lable or provide a valid lable id"));
 		
-		ResponceStructure<NotesResponse> notes = notesFeign.getAllNotes(noteId).getBody();
+		ResponceStructure<NotesResponse> notes = userFeign.getAllNotes(noteId).getBody();
 		lable.getNotes().add(noteId);
 		lable = dao.save(lable);
 		LableResponse response = mapToResponse(lable);
@@ -78,6 +78,9 @@ public class LableServiceImpl implements LableService {
 
 	@Override
 	public ResponseEntity<ResponceStructure<List<LableResponse>>> getLable(UUID userId) {
+		
+		UserResponse data = userFeign.getUserById(userId).getBody().getData();
+		System.out.println(data);
 		List<LableEntity> lable = dao.findByUserId(userId).get();
 		
 		List<LableResponse> response = lable.stream().map(l -> mapToResponse(l)).toList();
